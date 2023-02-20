@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">PagingWithCompose</string>
+    <string name="list_scroll_error_msg">Scroll Query Error Result.</string>
+    <string name="retry_button_title">Retry</string>
+    <string name="query_result_empty_msg">No Result</string>
+    <string name="list_fab_title">Up</string>
+    <string name="default_query">Android</string>
+</resources>
