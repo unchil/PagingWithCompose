@@ -70,9 +70,7 @@ fun SearchGitHubRepo(
 
                              when (loadState.refresh) {
                                  is LoadState.NotLoading -> {
-
                                      if (repoList.itemCount > 0) {
-
                                          LazyVerticalGrid(
                                              columns = GridCells.Fixed(1),
                                              state = listState,
@@ -98,9 +96,6 @@ fun SearchGitHubRepo(
                                              )
                                          }
                                      }
-
-
-
                                  }
                                  // Show loading spinner during initial load or refresh.
                                  is LoadState.Loading -> {
@@ -148,7 +143,6 @@ fun SearchGitHubRepo(
                                      }
                                  }
                              }
-
                         }
                     }
                 }
@@ -178,18 +172,14 @@ fun UpButton(listState: LazyGridState,  coroutineScope: CoroutineScope){
     }
 
     if( showButton) {
-
-            FloatingActionButton(
-                onClick = {
-                    coroutineScope.launch {
-                        listState.animateScrollToItem(0)
-
-                    }
+        FloatingActionButton(
+            onClick = {
+                coroutineScope.launch {
+                    listState.animateScrollToItem(0)
                 }
-            ) { Text(stringResource(id = R.string.list_fab_title)) }
-
+            }
+        ) { Text(stringResource(id = R.string.list_fab_title)) }
     }
-
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -235,7 +225,9 @@ fun ItemCard(
     Card(
         onClick = { onExploreItemClicked(item)} ,
         modifier = Modifier,
-        colors = CardDefaults.cardColors(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
         elevation = CardDefaults.cardElevation()
     ) {
 
