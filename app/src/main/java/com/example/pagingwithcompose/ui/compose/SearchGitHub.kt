@@ -1,12 +1,9 @@
 package com.example.pagingwithcompose.ui.compose
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -14,6 +11,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -24,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.pagingwithcompose.OnExploreItemClicked
@@ -45,16 +42,14 @@ fun SearchGitHubRepo(
     onExploreItemClicked: OnExploreItemClicked,
     viewModel: SearchGitHubViewModel = viewModel()
 ){
-
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyGridState()
-  //  var isVisibleHeader = remember { false }
- //   var isVisibleFooter = remember { false }
+
+    var isVisibleFooter by rememberSaveable { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
 
-
     val repoList = viewModel.pagingDataFlow.collectAsLazyPagingItems()
-
 
     PagingWithComposeTheme {
         Surface {
@@ -64,8 +59,7 @@ fun SearchGitHubRepo(
                 SearchTextField(  actionHandler = viewModel.actionHandler )
 
                 Scaffold (
-             //     topBar = { GridProgressIndicator(isVisibility = isVisibleHeader) },
-              //      bottomBar = { GridProgressIndicator(isVisibility = isVisibleFooter) },
+                    bottomBar = { GridProgressIndicator(isVisibility = isVisibleFooter) },
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     floatingActionButton = { UpButton(listState = listState, coroutineScope = coroutineScope) }
                 ) { innerPadding ->
@@ -74,11 +68,8 @@ fun SearchGitHubRepo(
 
                          repoList.apply {
 
-                       //      isVisibleFooter = (loadState.append == LoadState.Loading)
-
-                             when {
-
-                                 loadState.refresh is LoadState.NotLoading -> {
+                             when (loadState.refresh) {
+                                 is LoadState.NotLoading -> {
 
                                      if (repoList.itemCount > 0) {
 
@@ -96,8 +87,6 @@ fun SearchGitHubRepo(
                                                  }
                                              }
                                          }
-
-
                                      } else {
                                          Box(modifier = Modifier.fillMaxSize()) {
                                              Text(
@@ -110,10 +99,11 @@ fun SearchGitHubRepo(
                                          }
                                      }
 
+
+
                                  }
                                  // Show loading spinner during initial load or refresh.
-                                 loadState.refresh is LoadState.Loading -> {
-
+                                 is LoadState.Loading -> {
                                      Box(modifier = Modifier.fillMaxSize()) {
                                          CircularProgressIndicator(
                                              color = Color.Red,
@@ -122,13 +112,12 @@ fun SearchGitHubRepo(
                                      }
                                  }
                                  // Show the retry state if initial load or refresh fails.
-                                 loadState.refresh is LoadState.Error -> {
-
+                                 is LoadState.Error -> {
                                      coroutineScope.launch {
                                          val result = snackbarHostState.showSnackbar(
-                                             message =  "Data Loading Error"
-                                             ,actionLabel = "Retry"
-                                            , duration = SnackbarDuration.Long
+                                             message =  "Data Loading Error",
+                                             actionLabel = "Retry",
+                                             duration = SnackbarDuration.Long
                                          )
                                          when(result){
                                              SnackbarResult.ActionPerformed -> {
@@ -139,28 +128,28 @@ fun SearchGitHubRepo(
                                              else -> { }
                                          }
                                      }
-
                                  }
+                             }
 
-
-                                 loadState.append is LoadState.Error -> {
+                             when(loadState.append){
+                                 is LoadState.NotLoading -> {
+                                     isVisibleFooter = false
+                                 }
+                                 is LoadState.Loading -> {
+                                     isVisibleFooter = true
+                                 }
+                                 is LoadState.Error -> {
+                                     isVisibleFooter = false
                                      coroutineScope.launch {
                                          snackbarHostState.showSnackbar(
                                              message = "Scroll Loading Error"
-                                            ,duration = SnackbarDuration.Short
+                                             ,duration = SnackbarDuration.Short
                                          )
                                      }
                                  }
-
-
-
                              }
 
-
                         }
-
-
-
                     }
                 }
             }
