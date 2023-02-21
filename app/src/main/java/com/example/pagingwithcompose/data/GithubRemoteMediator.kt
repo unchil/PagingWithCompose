@@ -7,8 +7,8 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.pagingwithcompose.api.GithubService
 import com.example.pagingwithcompose.db.RemoteKeys
-import com.example.pagingwithcompose.db.RepoDatabase
 import com.example.pagingwithcompose.db.Repo
+import com.example.pagingwithcompose.db.RepoDatabase
 
 
 private const val GITHUB_STARTING_PAGE_INDEX = 1
@@ -77,7 +77,6 @@ class GithubRemoteMediator (
             }
 
             return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
-
         } catch(e: Exception) {
             return MediatorResult.Error(e)
         }

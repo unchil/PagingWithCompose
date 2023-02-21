@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val DEFAULT_QUERY = "Android"
+const val DEFAULT_QUERY = "Android"
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel

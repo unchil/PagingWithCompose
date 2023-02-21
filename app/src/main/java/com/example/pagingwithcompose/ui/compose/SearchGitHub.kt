@@ -1,9 +1,12 @@
 package com.example.pagingwithcompose.ui.compose
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -21,12 +24,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.pagingwithcompose.OnExploreItemClicked
 import com.example.pagingwithcompose.R
 import com.example.pagingwithcompose.db.Repo
 import com.example.pagingwithcompose.ui.theme.PagingWithComposeTheme
+import com.example.pagingwithcompose.vmodel.DEFAULT_QUERY
 import com.example.pagingwithcompose.vmodel.SearchGitHubViewModel
 import com.example.pagingwithcompose.vmodel.UiAction
 import kotlinx.coroutines.CoroutineScope
@@ -43,108 +48,117 @@ fun SearchGitHubRepo(
 
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyGridState()
-    var isVisibleHeader = remember { false }
-    var isVisibleFooter = remember { false }
+  //  var isVisibleHeader = remember { false }
+ //   var isVisibleFooter = remember { false }
     val snackbarHostState = remember { SnackbarHostState() }
 
+
     val repoList = viewModel.pagingDataFlow.collectAsLazyPagingItems()
+
 
     PagingWithComposeTheme {
         Surface {
 
             Column(modifier = Modifier.padding( 10.dp)) {
 
-                SearchTextField(actionHandler = viewModel.actionHandler)
+                SearchTextField(  actionHandler = viewModel.actionHandler )
 
                 Scaffold (
-                    topBar = { GridProgressIndicator(isVisibility = isVisibleHeader) },
-                    bottomBar = { GridProgressIndicator(isVisibility = isVisibleFooter) },
+             //     topBar = { GridProgressIndicator(isVisibility = isVisibleHeader) },
+              //      bottomBar = { GridProgressIndicator(isVisibility = isVisibleFooter) },
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     floatingActionButton = { UpButton(listState = listState, coroutineScope = coroutineScope) }
                 ) { innerPadding ->
 
                     Column(modifier = Modifier.padding(innerPadding)) {
 
-                        repoList.apply {
-                            when {
-                                // Only show the list if refresh succeeds, either from the the local db or the remote.
-                                loadState.refresh is LoadState.NotLoading -> {
-                                    if (repoList.itemCount > 0) {
+                         repoList.apply {
 
-                                        LazyVerticalGrid(
-                                            columns = GridCells.Fixed(1),
-                                            state = listState,
-                                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            items(repoList.itemCount) {
-                                                repoList[it]?.let {
-                                                    ItemCard(
-                                                        onExploreItemClicked = onExploreItemClicked,
-                                                        item = it
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        Text(
-                                            text = stringResource(id = R.string.query_result_empty_msg),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color.Black
-                                        )
-                                    }
-                                }
+                       //      isVisibleFooter = (loadState.append == LoadState.Loading)
 
-                                // Show loading spinner during initial load or refresh.
-                                loadState.refresh is LoadState.Loading -> {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        CircularProgressIndicator(
-                                            color = Color.Red,
-                                            modifier = Modifier.align(Alignment.Center)
-                                        )
-                                    }
-                                }
+                             when {
 
-                                // Show the retry state if initial load or refresh fails.
-                                loadState.refresh is LoadState.Error -> {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        Button(
-                                            modifier = Modifier.align(Alignment.Center)
-                                            ,onClick = {
-                                                coroutineScope.launch {
-                                                    viewModel.searchQueryFlow.collectLatest {
-                                                        viewModel.actionHandler( UiAction.Search( searchQuery = it.searchQuery ) )
-                                                    }
-                                                }
-                                            }
+                                 loadState.refresh is LoadState.NotLoading -> {
 
-                                        ) { Text(stringResource(id = R.string.retry_button_title)) }
-                                    }
-                                }
+                                     if (repoList.itemCount > 0) {
 
-                                // append
-                                loadState.append is LoadState.NotLoading -> { isVisibleFooter = false }
-                                loadState.append is LoadState.Loading -> { isVisibleFooter = true }
-                                loadState.append is LoadState.Error -> {
-                                    val msg = stringResource(id = R.string.list_scroll_error_msg)
-                                    coroutineScope.launch {
-
-                                        snackbarHostState.showSnackbar(msg)
-                                    }
-                                }
-
-                                // prepend
-                                loadState.prepend is LoadState.NotLoading -> { isVisibleHeader = false }
-                                loadState.prepend is LoadState.Loading -> { isVisibleHeader = true }
-                                loadState.prepend is LoadState.Error -> {
-                                    val msg = stringResource(id = R.string.list_scroll_error_msg)
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar( msg )
-                                    }
-                                }
+                                         LazyVerticalGrid(
+                                             columns = GridCells.Fixed(1),
+                                             state = listState,
+                                             verticalArrangement = Arrangement.spacedBy(8.dp)
+                                         ) {
+                                             items(repoList.itemCount) {
+                                                 repoList[it]?.let {
+                                                     ItemCard(
+                                                         onExploreItemClicked = onExploreItemClicked,
+                                                         item = it
+                                                     )
+                                                 }
+                                             }
+                                         }
 
 
-                            }
+                                     } else {
+                                         Box(modifier = Modifier.fillMaxSize()) {
+                                             Text(
+                                                 modifier = Modifier.align(Alignment.Center),
+                                                 text = stringResource(id = R.string.query_result_empty_msg),
+                                                 style = MaterialTheme.typography.headlineMedium,
+                                                 color = Color.Black
+
+                                             )
+                                         }
+                                     }
+
+                                 }
+                                 // Show loading spinner during initial load or refresh.
+                                 loadState.refresh is LoadState.Loading -> {
+
+                                     Box(modifier = Modifier.fillMaxSize()) {
+                                         CircularProgressIndicator(
+                                             color = Color.Red,
+                                             modifier = Modifier.align(Alignment.Center)
+                                         )
+                                     }
+                                 }
+                                 // Show the retry state if initial load or refresh fails.
+                                 loadState.refresh is LoadState.Error -> {
+
+                                     coroutineScope.launch {
+                                         val result = snackbarHostState.showSnackbar(
+                                             message =  "Data Loading Error"
+                                             ,actionLabel = "Retry"
+                                            , duration = SnackbarDuration.Long
+                                         )
+                                         when(result){
+                                             SnackbarResult.ActionPerformed -> {
+                                                 viewModel.searchQueryFlow.collectLatest {
+                                                     viewModel.actionHandler( UiAction.Search( searchQuery = it.searchQuery ) )
+                                                 }
+                                             }
+                                             else -> { }
+                                         }
+                                     }
+
+                                 }
+
+
+                                 loadState.append is LoadState.Error -> {
+                                     coroutineScope.launch {
+                                         snackbarHostState.showSnackbar(
+                                             message = "Scroll Loading Error"
+                                            ,duration = SnackbarDuration.Short
+                                         )
+                                     }
+                                 }
+
+
+
+                             }
+
+
                         }
+
 
 
                     }
@@ -174,14 +188,17 @@ fun UpButton(listState: LazyGridState,  coroutineScope: CoroutineScope){
         }
     }
 
-    if(showButton) {
-        FloatingActionButton(
-            onClick = {
-                coroutineScope.launch {
-                    listState.scrollToItem(0)
+    if( showButton) {
+
+            FloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(0)
+
+                    }
                 }
-            }
-        ) { Text(stringResource(id = R.string.list_fab_title)) }
+            ) { Text(stringResource(id = R.string.list_fab_title)) }
+
     }
 
 }
@@ -190,7 +207,7 @@ fun UpButton(listState: LazyGridState,  coroutineScope: CoroutineScope){
 @Composable
 fun SearchTextField(actionHandler: (UiAction) -> Unit) {
 
-    var title by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf(DEFAULT_QUERY) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -211,7 +228,9 @@ fun SearchTextField(actionHandler: (UiAction) -> Unit) {
                 keyboardController?.hide()
             }
         )
-        ,modifier = Modifier.fillMaxWidth()
+        ,modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
     )
 
 
