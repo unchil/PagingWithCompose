@@ -5,7 +5,7 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
-import com.example.pagingwithcompose.api.GithubService
+import com.example.pagingwithcompose.api.GithubInterface
 import com.example.pagingwithcompose.db.RemoteKeys
 import com.example.pagingwithcompose.db.Repo
 import com.example.pagingwithcompose.db.RepoDatabase
@@ -17,7 +17,8 @@ private const val IN_QUALIFIER = "in:name,description"
 @OptIn(ExperimentalPagingApi::class)
 class GithubRemoteMediator (
     private val query: String,
-    private val service: GithubService,
+   // private val service: GithubService,
+    private val service: GithubInterface,
     private val repoDatabase: RepoDatabase
 ): RemoteMediator<Int, Repo>() {
 

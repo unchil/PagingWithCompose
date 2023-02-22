@@ -44,9 +44,7 @@ fun SearchGitHubRepo(
 ){
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyGridState()
-
     var isVisibleFooter by rememberSaveable { mutableStateOf(false) }
-
     val snackbarHostState = remember { SnackbarHostState() }
 
     val repoList = viewModel.pagingDataFlow.collectAsLazyPagingItems()
